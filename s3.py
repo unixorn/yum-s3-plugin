@@ -6,37 +6,53 @@ REST authentication scheme.
 """
 
 
+SECRET_KEY = 'my_amazon_secret_key'
+KEY_ID = 'my_amazon_key_id'
 
 
 def createBotoGrabber():
 	import boto
 	from urlparse import urlparse
+	import sys
 
 	class BotoGrabber:
-		def __init__(self, awsAccessKey, awsSecretKey, **kwargs):
+		def __init__(self, awsAccessKey, awsSecretKey, baseurl):
+			print "BotoGrabber init BASE_URL=%s" % baseurl
+			if not baseurl: raise Exception("BotoGrabberInit got blank baseurl")
+			try: baseurl = baseurl[0]
+			except: pass
 			self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
+			self.baseurl = urlparse(baseurl)
+			self.bucket_name = self.baseurl.netloc.split('.')[0]
+			self.key_prefix = self.baseurl.path[1:]
 
-		def _key(self, url):
-			url = urlparse(url)
-			bucket_name = url.netloc.split('.')[0]
-			key_name = url.path[1:]
-			bucket = self.s3.get_bucket(bucket_name)
+		def _key_name(self,url):
+			return "%s%s" % ( self.key_prefix, url )
+
+		def _key(self, key_name):
+			bucket = self.s3.get_bucket(self.bucket_name)
 			return bucket.get_key(key_name)
 
 		def urlgrab(self, url, filename=None, **kwargs):
 			"""urlgrab(url) copy the file to the local filesystem"""
-			print 'urlgrab s3'
-			key = self._key(url)
+			print "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename )
+			key_name = self._key_name(url)
+			print "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename )
+			key = self._key(key_name)
+			if not key: raise Exception("Can not get key for key=%s" % key_name )
 			if not filename: filename = key.key
 			key.get_contents_to_filename(filename)
+			return True
 			# zzz - does this return a value or something?
 	
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
+			print "BotoGrabber urlopen url=%s" % url 
 			return self._key(url)
 
 		def urlread(self, url, limit=None, **kwargs):
 			"""urlread(url) return the contents of the file as a string"""
+			print "BotoGrabber urlread url=%s" % url 
 			return self._key(url).read()
 
 	return BotoGrabber
@@ -104,8 +120,14 @@ def createUrllibGrabber():
 
 
 def createGrabber():
-	try: return createBotoGrabber()
-	except: return createUrllibGrabber()
+	import traceback
+	try:
+		rv = createBotoGrabber()
+		print "Created BotoGrabber"
+		return rv
+	except:
+		print "Creating UrllibGrabber"
+		return createUrllibGrabber()
 
 AmazonS3Grabber = createGrabber()
 
@@ -114,12 +136,15 @@ import sys
 import urllib
 from yum.plugins import TYPE_CORE
 from yum.yumRepo import YumRepository
+from yum import config
+
 import yum.Errors
 
 __revision__ = "1.0.0"
 
 requires_api_version = '2.5'
 plugin_type = TYPE_CORE
+CONDUIT=None
 
 def config_hook(conduit):
 	config.RepoConf.s3_enabled = config.BoolOption(False)
@@ -128,21 +153,22 @@ def init_hook(conduit):
 	""" 
 	Plugin initialization hook. Setup the S3 repositories.
 	"""
-   
+
 	repos = conduit.getRepos()
-	for i in repos.repos.keys():
-		rs = repos.repos[i]
-		if isinstance(repo, YumRepository) and repo.s3_enabled:
-			new_repo = AmazonS3Repo(idx)
+	for key,repo in repos.repos.iteritems():
+		print type(repo)
+		print "s3_enabled=%s" % repo.s3_enabled
+		if isinstance(repo, YumRepository) and repo.s3_enabled: 
+			new_repo = AmazonS3Repo(key)
 			new_repo.baseurl = repo.baseurl
 			new_repo.mirrorlist = repo.mirrorlist
 			new_repo.basecachedir = repo.basecachedir
 			new_repo.gpgcheck = repo.gpgcheck
 			new_repo.proxy = repo.proxy
 			new_repo.enablegroups = repo.enablegroups
-																		
-			del rs.repos[repo.id]
-			rs.add(new_repo)
+			del repos.repos[repo.id]
+			repos.add(new_repo)
+			#repos.add(new_repo)
 
 
 class AmazonS3Repo(YumRepository):
@@ -153,9 +179,18 @@ class AmazonS3Repo(YumRepository):
 	def __init__(self, repoid):
 		YumRepository.__init__(self, repoid)
 		self.enable()
+		self.grabber = None
 
-	def _setupGrab(self):
+	def setupGrab(self):
 		YumRepository.setupGrab(self)
-		self.grab = AmazonS3Grabber(self.grab, 'my-access-key', 'my-secret-key')
+		self.grabber = AmazonS3Grabber(KEY_ID, SECRET_KEY )
 
-	setupGrab = _setupGrab
+	def _getgrabfunc(self): raise Exception("get grabfunc!")
+	def _getgrab(self):
+		if not self.grabber:
+			self.grabber = AmazonS3Grabber(KEY_ID, SECRET_KEY, baseurl=self.baseurl )
+		return self.grabber
+
+	grabfunc = property(lambda self: self._getgrabfunc())
+	grab = property(lambda self: self._getgrab())
+
