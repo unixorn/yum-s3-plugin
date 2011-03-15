@@ -1,0 +1,44 @@
+;
+; sample s3 repository config /etc/yum.repos.d/s3test.conf
+; Many thanks to Steven Maggs for showing me how to configure and run Yum
+;
+ 
+[s3test]
+name=FrameMedia S3 yum test
+; baseurl
+; If boto is used:
+;     -- host name is split on '.'
+;     -- first part of host name becomes bucket name used for file retrieval
+;     -- everyting in the URL path becomes prefixed to item keys
+;
+;     So, in the example
+;
+;
+;           baseurl=http://your-bucket-name.s3.amazonaws.com/foo/bar/
+;        - Bucket name is 'your-bucket-name'
+;        - A retrieval of 'foo.rpm' becomes bucket.get_key( 'foo/bar/foo.rpm' )
+;
+;     And for
+;
+;           baseurl=http://your-bucket-name.s3.amazonaws.com/foo.bar.
+;
+;        - Bucket name is 'your-bucket-name'
+;        - A retrieval of 'foo.rpm' becomes bucket.get_key( 'foo.bar.foo.rpm' )
+;     
+;    And finally
+;
+;           baseurl=http://your-bucket-name.s3.amazonaws.com/
+;
+;        - Bucket name is 'your-bucket-name'
+;        - A retrieval of 'foo.rpm' becomes bucket.get_key( 'foo.rpm' )
+;
+;  The Amazon REST API is still untested.   But if it were working, it should work fine using
+;  the same URLs for the Boto urlgrabber.
+; 
+;         
+
+baseurl=http://your-bucket-name.s3.amazonaws.com/
+failovermethod=priority
+enabled=0
+gpgcheck=0
+s3_enabled=1
