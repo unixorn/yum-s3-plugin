@@ -9,7 +9,6 @@ REST authentication scheme.
 SECRET_KEY = 'my_amazon_secret_key'
 KEY_ID = 'my_amazon_key_id'
 
-
 def createBotoGrabber():
 	import boto
 	from urlparse import urlparse
@@ -85,17 +84,21 @@ def createUrllibGrabber():
         		digest = base64.b64encode(digest)
         		request.add_header('Authorization', "AWS %s:%s" % ( key_id,  digest ))
 
-		def __init__(self, awsAccessKey, awsSecretKey, **kwargs):
+		def __init__(self, awsAccessKey, awsSecretKey, baseurl ):
+			try: baseurl = baseurl[0]
+			except: pass
+			self.baseurl = baseurl
 			self.awsAccessKey = awsAccessKey
 			self.awsSecretKey = awsSecretKey
 
 		def _request(self,url):
-			req = urllib2.Request(url)
+			req = urllib2.Request("%s%s" % (self.baseurl, url))
 			UrllibGrabber.s3sign(req, self.awsSecretKey, self.awsAccessKey )
 			return req
 
 		def urlgrab(self, url, filename=None, **kwargs):
 			"""urlgrab(url) copy the file to the local filesystem"""
+			print "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename )
 			req = self._request(url)
 			if not filename:
 				filename = req.get_selector()
@@ -107,6 +110,7 @@ def createUrllibGrabber():
 				out.write(buff)
 				buff = resp.read(8192)
 			return filename
+			# zzz - does this return a value or something?
 	
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
@@ -120,7 +124,6 @@ def createUrllibGrabber():
 
 
 def createGrabber():
-	import traceback
 	try:
 		rv = createBotoGrabber()
 		print "Created BotoGrabber"
