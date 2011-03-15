@@ -1,9 +1,31 @@
 """
 Yum plugin for Amazon S3 access.
 
-This plugin provides access to a protected Amazon S3 bucket using Amazon's special
-REST authentication scheme.
+This plugin provides access to a protected Amazon S3 bucket using either boto
+or Amazon's REST authentication scheme.
+
+On CentOS this file goes into /usr/lib/yum-plugins/s3.py
+
+You will also need two configuration files.   See s3.conf and s3test.repo for
+examples on how to deploy those.
+
+
 """
+
+#   Copyright 2011, Robert Mela
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 
 
 SECRET_KEY = 'my_amazon_secret_key'

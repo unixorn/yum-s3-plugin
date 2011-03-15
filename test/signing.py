@@ -1,16 +1,34 @@
+"""
+   unittest for signing of S3 Rest requests
+
+"""
+
+#   Copyright 2011, Robert Mela
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 import sys, urllib2, time
 sys.path.append('..')
 sys.path.append('.')
 import s3plugin
 import unittest
-import testvalues
 
 class TestSigning(unittest.TestCase):
 	"""You need to configure SECRET_KEY, KEY_ID, and TEST_URL with real values for your s3 store"""
 
-	SECRET_KEY = testvalues.SECRET_KEY
-	KEY_ID     = testvalues.KEY_ID
-	TEST_URL   = testvalues.TEST_URL
+	SECRET_KEY = 'my_amazon_secret_key'
+	KEY_ID= 'my_amazon_key_id'
+	TEST_URL='http://your_bucket_name.s3.amazonws.com/yourfile.ext'
 
 	def setUp(self):
 		print "Setup"
@@ -20,8 +38,10 @@ class TestSigning(unittest.TestCase):
 		grabber = s3plugin.createUrllibGrabber()
 		
 	def test_03_invalidkey(self):
+		self.failIf(self.SECRET_KEY=='my_amazon_secret_key')
+		self.failIf(len(self.KEY_ID) != len('0PN5J17HBGZHT7JJ3X82'))
 		req=urllib2.Request(self.TEST_URL)
-		self.grabber.s3sign(req,'bogus_key', self.KEY_ID)
+		self.grabber.s3sign(req,self.SECRET_KEY, self.KEY_ID)
 		self.assertRaises(urllib2.HTTPError, urllib2.urlopen, req )
 
 	def test_02_urlopen(self):
