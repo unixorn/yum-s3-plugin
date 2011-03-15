@@ -42,7 +42,7 @@ def createBotoGrabber():
 			if not key: raise Exception("Can not get key for key=%s" % key_name )
 			if not filename: filename = key.key
 			key.get_contents_to_filename(filename)
-			return True
+			return filename
 			# zzz - does this return a value or something?
 	
 		def urlopen(self, url, **kwargs):
@@ -106,7 +106,7 @@ def createUrllibGrabber():
 			while buff:
 				out.write(buff)
 				buff = resp.read(8192)
-			# zzz - does this return a value or something?
+			return filename
 	
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
