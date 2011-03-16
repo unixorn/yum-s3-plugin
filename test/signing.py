@@ -20,35 +20,33 @@
 import sys, urllib2, time
 sys.path.append('..')
 sys.path.append('.')
-import s3plugin
+import s3
 import unittest
+import testvalues as tv
 
 class TestSigning(unittest.TestCase):
 	"""You need to configure SECRET_KEY, KEY_ID, and TEST_URL with real values for your s3 store"""
 
-	SECRET_KEY = 'my_amazon_secret_key'
-	KEY_ID= 'my_amazon_key_id'
-	TEST_URL='http://your_bucket_name.s3.amazonws.com/yourfile.ext'
 
 	def setUp(self):
 		print "Setup"
-		self.grabber = s3plugin.createUrllibGrabber()
+		self.grabber = s3.createUrllibGrabber()
 
 	def test_01_constructor(self):
-		grabber = s3plugin.createUrllibGrabber()
+		grabber = s3.createUrllibGrabber()
 		
 	def test_03_invalidkey(self):
-		self.failIf(self.SECRET_KEY=='my_amazon_secret_key')
-		self.failIf(len(self.KEY_ID) != len('0PN5J17HBGZHT7JJ3X82'))
-		req=urllib2.Request(self.TEST_URL)
-		self.grabber.s3sign(req,self.SECRET_KEY, self.KEY_ID)
+		self.failIf(tv.SECRET_KEY=='my_amazon_secret_key')
+		self.failIf(len(tv.KEY_ID) != len('0PN5J17HBGZHT7JJ3X82'))
+		req=urllib2.Request(tv.TEST_URL)
+		self.grabber.s3sign(req,'bogus_key', tv.KEY_ID)
 		self.assertRaises(urllib2.HTTPError, urllib2.urlopen, req )
 
 	def test_02_urlopen(self):
-		self.failIf(self.SECRET_KEY=='my_amazon_secret_key')
-		self.failIf(len(self.KEY_ID) != len('0PN5J17HBGZHT7JJ3X82'))
-		req=urllib2.Request(self.TEST_URL)
-		self.grabber.s3sign(req,self.SECRET_KEY, self.KEY_ID)
+		self.failIf(tv.SECRET_KEY=='my_amazon_secret_key')
+		self.failIf(len(tv.KEY_ID) != len('0PN5J17HBGZHT7JJ3X82'))
+		req=urllib2.Request(tv.TEST_URL)
+		self.grabber.s3sign(req,tv.SECRET_KEY, tv.KEY_ID)
 		resp=urllib2.urlopen(req)
 		self.assertEquals(1,1)
 

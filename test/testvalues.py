@@ -22,4 +22,6 @@
 
 SECRET_KEY = 'my_amazon_secret_key'
 KEY_ID = 'my_amazon_key_id'
-TEST_URL='http://your_bucket_name.s3.amazonaws.com/yourfile.ext'
+TEST_URL_BASE='http://my-bucket-name.s3.amazonaws.com/'
+TEST_FILE='myfile.ext'
+TEST_URL= TEST_URL_BASE + TEST_FILE
