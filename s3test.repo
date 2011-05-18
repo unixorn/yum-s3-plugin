@@ -51,8 +51,12 @@
 
 [s3test]
 name=S3 yum plugin test repository config
-baseurl=http://your-bucket-name.s3.amazonaws.com/
+baseurl=http://XXXX.s3.amazonaws.com/latest/RPMS/x86_64
 failovermethod=priority
-enabled=0
+enabled=1
 gpgcheck=0
+
 s3_enabled=1
+key_id=XXXX
+secret_key=XXXX
+

@@ -26,11 +26,6 @@ examples on how to deploy those.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
-
-SECRET_KEY = ''
-KEY_ID = ''
-
 def createBotoGrabber():
 	import boto
 	from urlparse import urlparse
@@ -175,6 +170,8 @@ CONDUIT=None
 
 def config_hook(conduit):
 	config.RepoConf.s3_enabled = config.BoolOption(False)
+	config.RepoConf.key_id = config.Option()
+	config.RepoConf.secret_key = config.Option()
 
 def init_hook(conduit):
 	""" 
@@ -183,8 +180,6 @@ def init_hook(conduit):
 
 	repos = conduit.getRepos()
 	for key,repo in repos.repos.iteritems():
-		#print type(repo)
-		#print "s3_enabled=%s" % repo.s3_enabled
 		if isinstance(repo, YumRepository) and repo.s3_enabled: 
 			new_repo = AmazonS3Repo(key)
 			new_repo.baseurl = repo.baseurl
@@ -193,9 +188,10 @@ def init_hook(conduit):
 			new_repo.gpgcheck = repo.gpgcheck
 			new_repo.proxy = repo.proxy
 			new_repo.enablegroups = repo.enablegroups
+			new_repo.key_id = repo.key_id
+			new_repo.secret_key = repo.secret_key
 			del repos.repos[repo.id]
 			repos.add(new_repo)
-			#repos.add(new_repo)
 
 
 class AmazonS3Repo(YumRepository):
@@ -210,12 +206,12 @@ class AmazonS3Repo(YumRepository):
 
 	def setupGrab(self):
 		YumRepository.setupGrab(self)
-		self.grabber = AmazonS3Grabber(KEY_ID, SECRET_KEY )
+		self.grabber = AmazonS3Grabber(self.key_id, self.secret_key )
 
 	def _getgrabfunc(self): raise Exception("get grabfunc!")
 	def _getgrab(self):
 		if not self.grabber:
-			self.grabber = AmazonS3Grabber(KEY_ID, SECRET_KEY, baseurl=self.baseurl )
+			self.grabber = AmazonS3Grabber(self.key_id, self.secret_key, baseurl=self.baseurl )
 		return self.grabber
 
 	grabfunc = property(lambda self: self._getgrabfunc())
