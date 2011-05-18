@@ -1,5 +1,5 @@
 Name:		yum-s3
-Version:	0.1.0
+Version:	0.1.1
 Release:	1
 Summary:	Amazon S3 plugin for yum.
 
@@ -39,7 +39,5 @@ rm -rf "${RPM_BUILD_ROOT}"
 %defattr(-,root,root,-)
 /etc/yum.repo.d/s3test.repo
 /etc/yum/pluginconf.d/s3.conf
-/usr/lib/yum-plugins/s3.py
-/usr/lib/yum-plugins/s3.py[oc]
-
+/usr/lib/yum-plugins
 %changelog
