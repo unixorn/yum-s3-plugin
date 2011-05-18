@@ -28,8 +28,8 @@ examples on how to deploy those.
 
 
 
-SECRET_KEY = 'my_amazon_secret_key'
-KEY_ID = 'my_amazon_key_id'
+SECRET_KEY = ''
+KEY_ID = ''
 
 def createBotoGrabber():
 	import boto
@@ -44,14 +44,16 @@ def createBotoGrabber():
 			except: pass
 			self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
 			self.baseurl = urlparse(baseurl)
-			self.bucket_name = self.baseurl.netloc.split('.')[0]
-			self.key_prefix = self.baseurl.path[1:]
+			self.bucket_name = self.baseurl[1].split('.')[0]
+			self.key_prefix = "".join(self.baseurl[2:])
 
 		def _key_name(self,url):
+			print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
 			return "%s%s" % ( self.key_prefix, url )
 
 		def _key(self, key_name):
 			bucket = self.s3.get_bucket(self.bucket_name)
+			print "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name )
 			return bucket.get_key(key_name)
 
 		def urlgrab(self, url, filename=None, **kwargs):
@@ -85,7 +87,7 @@ def createUrllibGrabber():
 	import os
 	import sys
 	import urllib2
-	import time, hashlib, hmac, base64
+	import time, sha, hmac, base64
 
 	class UrllibGrabber:
 		@classmethod
@@ -102,7 +104,7 @@ def createUrllibGrabber():
 			                               'date':request.headers.get('Date'),
 			                               #'canon_amzn_headers':'',
 			                               'canon_amzn_resource':resource }
-        		digest = hmac.new(secret_key, sigstring, hashlib.sha1 ).digest()
+        		digest = hmac.new(secret_key, sigstring, sha ).digest()
         		digest = base64.b64encode(digest)
         		request.add_header('Authorization', "AWS %s:%s" % ( key_id,  digest ))
 
@@ -181,8 +183,8 @@ def init_hook(conduit):
 
 	repos = conduit.getRepos()
 	for key,repo in repos.repos.iteritems():
-		print type(repo)
-		print "s3_enabled=%s" % repo.s3_enabled
+		#print type(repo)
+		#print "s3_enabled=%s" % repo.s3_enabled
 		if isinstance(repo, YumRepository) and repo.s3_enabled: 
 			new_repo = AmazonS3Repo(key)
 			new_repo.baseurl = repo.baseurl
