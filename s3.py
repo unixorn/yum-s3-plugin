@@ -30,32 +30,46 @@ def createBotoGrabber():
 	import boto
 	from urlparse import urlparse
 	import sys
+	import re
 
 	class BotoGrabber:
+		DEBUG = None
 		def __init__(self, awsAccessKey, awsSecretKey, baseurl):
-			print "BotoGrabber init BASE_URL=%s" % baseurl
+			if self.DEBUG:
+				print "BotoGrabber init BASE_URL=%s" % baseurl
 			if not baseurl: raise Exception("BotoGrabberInit got blank baseurl")
 			try: baseurl = baseurl[0]
 			except: pass
 			self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
 			self.baseurl = urlparse(baseurl)
-			self.bucket_name = self.baseurl[1].split('.')[0]
-			self.key_prefix = "".join(self.baseurl[2:])
+			if hasattr(self.baseurl, 'netloc'):
+				self.bucket_name = self.baseurl.netloc
+				self.key_prefix = self.baseurl.path[1:]
+			else:
+				self.bucket_name = self.baseurl[1]
+				self.key_prefix = self.baseurl[2]
+			m = re.match('/(.*)\.s3\.amazonaws\.com/', self.bucket_name)
+			if (m):
+				self.bucket_name = m.group(1)
 
 		def _key_name(self,url):
-			print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
+			if self.DEBUG:
+				print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
 			return "%s%s" % ( self.key_prefix, url )
 
 		def _key(self, key_name):
 			bucket = self.s3.get_bucket(self.bucket_name)
-			print "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name )
+			if self.DEBUG:
+				print "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name )
 			return bucket.get_key(key_name)
 
 		def urlgrab(self, url, filename=None, **kwargs):
 			"""urlgrab(url) copy the file to the local filesystem"""
-			print "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename )
+			if self.DEBUG:
+				print "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename )
 			key_name = self._key_name(url)
-			print "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename )
+			if self.DEBUG:
+				print "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename )
 			key = self._key(key_name)
 			if not key: raise Exception("Can not get key for key=%s" % key_name )
 			if not filename: filename = key.key
@@ -65,12 +79,14 @@ def createBotoGrabber():
 	
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
-			print "BotoGrabber urlopen url=%s" % url 
+			if self.DEBUG:
+				print "BotoGrabber urlopen url=%s" % url 
 			return self._key(url)
 
 		def urlread(self, url, limit=None, **kwargs):
 			"""urlread(url) return the contents of the file as a string"""
-			print "BotoGrabber urlread url=%s" % url 
+			if self.DEBUG:
+				print "BotoGrabber urlread url=%s" % url 
 			return self._key(url).read()
 
 	return BotoGrabber
@@ -85,7 +101,9 @@ def createUrllibGrabber():
 	import time, sha, hmac, base64
 
 	class UrllibGrabber:
+		DEBUG = None
 		@classmethod
+
 		def s3sign(cls,request, secret_key, key_id, date=None):
         		date=time.strftime("%a, %d %b %Y %H:%M:%S +0000", date or time.gmtime() )
         		host = request.get_host()
@@ -117,7 +135,8 @@ def createUrllibGrabber():
 
 		def urlgrab(self, url, filename=None, **kwargs):
 			"""urlgrab(url) copy the file to the local filesystem"""
-			print "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename )
+			if self.DEBUG:
+				print "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename )
 			req = self._request(url)
 			if not filename:
 				filename = req.get_selector()
@@ -143,12 +162,15 @@ def createUrllibGrabber():
 
 
 def createGrabber():
+	DEBUG = None
 	try:
 		rv = createBotoGrabber()
-		print "Created BotoGrabber"
+		if DEBUG:
+			print "Created BotoGrabber"
 		return rv
 	except:
-		print "Creating UrllibGrabber"
+		if DEBUG:
+			print "Creating UrllibGrabber"
 		return createUrllibGrabber()
 
 AmazonS3Grabber = createGrabber()
