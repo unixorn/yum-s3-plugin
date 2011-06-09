@@ -76,17 +76,17 @@ def createBotoGrabber():
 			key.get_contents_to_filename(filename)
 			return filename
 			# zzz - does this return a value or something?
-	
+
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
 			if self.DEBUG:
-				print "BotoGrabber urlopen url=%s" % url 
+				print "BotoGrabber urlopen url=%s" % url
 			return self._key(url)
 
 		def urlread(self, url, limit=None, **kwargs):
 			"""urlread(url) return the contents of the file as a string"""
 			if self.DEBUG:
-				print "BotoGrabber urlread url=%s" % url 
+				print "BotoGrabber urlread url=%s" % url
 			return self._key(url).read()
 
 	return BotoGrabber
@@ -149,7 +149,7 @@ def createUrllibGrabber():
 				buff = resp.read(8192)
 			return filename
 			# zzz - does this return a value or something?
-	
+
 		def urlopen(self, url, **kwargs):
 			"""urlopen(url) open the remote file and return a file object"""
 			return urllib2.urlopen( self._request(url) )
@@ -196,13 +196,13 @@ def config_hook(conduit):
 	config.RepoConf.secret_key = config.Option()
 
 def init_hook(conduit):
-	""" 
+	"""
 	Plugin initialization hook. Setup the S3 repositories.
 	"""
 
 	repos = conduit.getRepos()
 	for key,repo in repos.repos.iteritems():
-		if isinstance(repo, YumRepository) and repo.s3_enabled: 
+		if isinstance(repo, YumRepository) and repo.s3_enabled:
 			new_repo = AmazonS3Repo(key)
 			new_repo.baseurl = repo.baseurl
 			new_repo.mirrorlist = repo.mirrorlist
@@ -220,7 +220,7 @@ class AmazonS3Repo(YumRepository):
 	"""
 	Repository object for Amazon S3.
 	"""
-	
+
 	def __init__(self, repoid):
 		YumRepository.__init__(self, repoid)
 		self.enable()
