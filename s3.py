@@ -51,7 +51,8 @@ def createBotoGrabber():
 			m = re.match('(.*)\.s3.*\.amazonaws\.com', self.bucket_name)
 			if (m):
 				self.bucket_name = m.group(1)
-			print "%s - %s" % (self.bucket_name, self.key_prefix)
+			if sys.stdout.isatty():
+				print "%s - %s" % (self.bucket_name, self.key_prefix)
 
 		def _key_name(self,url):
 			if self.DEBUG:
