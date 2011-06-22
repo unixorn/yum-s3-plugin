@@ -31,10 +31,14 @@ def createBotoGrabber():
 	from urlparse import urlparse
 	import sys
 	import re
+	from urlgrabber.grabber import URLGrabber
 
-	class BotoGrabber:
+	class BotoGrabber(URLGrabber):
 		DEBUG = None
 		def __init__(self, awsAccessKey, awsSecretKey, baseurl):
+			if self.DEBUG:
+				print "creating empty URLGrabber instance"
+			URLGrabber.__init__(self)
 			if self.DEBUG:
 				print "BotoGrabber init BASE_URL=%s" % baseurl
 			if not baseurl: raise Exception("BotoGrabberInit got blank baseurl")
@@ -57,7 +61,10 @@ def createBotoGrabber():
 		def _key_name(self,url):
 			if self.DEBUG:
 				print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
-			return "%s%s" % ( self.key_prefix, url )
+			if self.key_prefix != 'n4-private-repo' and not url.startswith("http://"):
+				return "%s%s" % ( self.key_prefix, url )
+			return urlparse(url)[2]
+			#return "%s%s" % ( self.key_prefix, url )
 
 		def _key(self, key_name):
 			bucket = self.s3.get_bucket(self.bucket_name)
@@ -92,8 +99,6 @@ def createBotoGrabber():
 			return self._key(url).read()
 
 	return BotoGrabber
-
-
 
 def createUrllibGrabber():
 
