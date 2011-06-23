@@ -4,7 +4,7 @@ usage () {
       echo "$0: a small wrapper to generate a rpm."
       echo "Usage: $0 -d"
       echo "Options:"
-      echo " -d: -doit ;-)"
+      echo "Note that -d is meaningless, it stands for 'do it'..."
 }
 
 if [ "$1" != "-d" ]; then
