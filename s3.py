@@ -61,7 +61,7 @@ def createBotoGrabber():
 		def _key_name(self,url):
 			if self.DEBUG:
 				print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
-			if self.key_prefix != 'n4-private-repo' and not url.startswith("http://"):
+			if not url.startswith("http://"):
 				return "%s%s" % ( self.key_prefix, url )
 			return urlparse(url)[2]
 			#return "%s%s" % ( self.key_prefix, url )
