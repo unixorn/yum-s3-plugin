@@ -1,11 +1,11 @@
 Name:		yum-s3
-Version:	0.1.4
-Release:	4001
+Version:	0.1.5
+Release:	1
 Summary:	Amazon S3 plugin for yum.
 
 Group:		unknown
 License:	Apache License 2.0
-URL:		git@github.com:jbraeuer/yum-s3-plugin.git
+URL:		git@github.com:NumberFour/yum-s3-plugin.git
 Source0:	s3.py
 Source1:	s3.conf
 Source2:	s3test.repo
