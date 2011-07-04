@@ -63,8 +63,12 @@ def createBotoGrabber():
 				print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
 			if not url.startswith("http://"):
 				return "%s%s" % ( self.key_prefix, url )
-			return urlparse(url)[2]
-			#return "%s%s" % ( self.key_prefix, url )
+			if sys.stdout.isatty():
+				print "Notice: extracting path from url (%s) instead of using prefix (%s)" % (url,self.key_prefix)
+			result = urlparse(url)[2]
+			if sys.stdout.isatty():
+				print "Notice: extracted path is: %s" % result
+			return result
 
 		def _key(self, key_name):
 			bucket = self.s3.get_bucket(self.bucket_name)
