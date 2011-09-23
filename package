@@ -13,7 +13,7 @@ if [ "$1" != "-d" ]; then
 fi
 
 buildroot=$(dirname $(readlink -f "$0"))
-mkdir -p ${buildroot}/{RPMS,BUILD}
+mkdir -p ${buildroot}/{RPMS,BUILD,BUILDROOT}
 rpmbuild --verbose \
     --define "_sourcedir ${buildroot}" \
     --define "_topdir ${buildroot}" \
