@@ -63,7 +63,7 @@ So when you add a RPM to a repository, you do the following steps
 - create a symlink in the folder (like CI, testing, production)
 - run createrepo with the --baseurl option
 
-This will give create the yum xml-files based on the symlinks that are
+This will create the yum xml-files based on the symlinks that are
 present. So you can decide with the symlinks at createrepo-time, which
 packages are "visible".
 
