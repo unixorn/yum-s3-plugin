@@ -36,11 +36,9 @@ def createBotoGrabber():
     class BotoGrabber(URLGrabber):
         DEBUG = None
         def __init__(self, awsAccessKey, awsSecretKey, baseurl):
-            if self.DEBUG:
-                print "creating empty URLGrabber instance"
+            self.verbose_logger.log(logginglevels.DEBUG_4, "creating empty URLGrabber instance")
             URLGrabber.__init__(self)
-            if self.DEBUG:
-                print "BotoGrabber init BASE_URL=%s" % baseurl
+            self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber init BASE_URL=%s" % baseurl)
             if not baseurl: raise Exception("BotoGrabberInit got blank baseurl")
             try: baseurl = baseurl[0]
             except: pass
@@ -59,8 +57,7 @@ def createBotoGrabber():
                 print "%s - %s" % (self.bucket_name, self.key_prefix)
 
         def _key_name(self,url):
-            if self.DEBUG:
-                print "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix )
+            self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix ))
             if not url.startswith("http://"):
                 return "%s%s" % ( self.key_prefix, url )
             if sys.stdout.isatty():
@@ -72,17 +69,16 @@ def createBotoGrabber():
 
         def _key(self, key_name):
             bucket = self.s3.get_bucket(self.bucket_name)
-            if self.DEBUG:
-                print "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name )
+            self.verbose_logger.log(logginglevels.DEBUG_4,
+                                    "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name ))
             return bucket.get_key(key_name)
 
         def urlgrab(self, url, filename=None, **kwargs):
             """urlgrab(url) copy the file to the local filesystem"""
-            if self.DEBUG:
-                print "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename )
+            self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename ))
             key_name = self._key_name(url)
-            if self.DEBUG:
-                print "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename )
+            self.verbose_logger.log(logginglevels.DEBUG_4,
+                                    "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename ))
             key = self._key(key_name)
             if not key: raise Exception("Can not get key for key=%s" % key_name )
             if not filename: filename = key.key
@@ -92,14 +88,12 @@ def createBotoGrabber():
 
         def urlopen(self, url, **kwargs):
             """urlopen(url) open the remote file and return a file object"""
-            if self.DEBUG:
-                print "BotoGrabber urlopen url=%s" % url
+            self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber urlopen url=%s" % url)
             return self._key(url)
 
         def urlread(self, url, limit=None, **kwargs):
             """urlread(url) return the contents of the file as a string"""
-            if self.DEBUG:
-                print "BotoGrabber urlread url=%s" % url
+            self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber urlread url=%s" % url)
             return self._key(url).read()
 
     return BotoGrabber
@@ -146,8 +140,7 @@ def createUrllibGrabber():
 
         def urlgrab(self, url, filename=None, **kwargs):
             """urlgrab(url) copy the file to the local filesystem"""
-            if self.DEBUG:
-                print "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename )
+            self.verbose_logger.log(logginglevels.DEBUG_4, "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename ))
             req = self._request(url)
             if not filename:
                 filename = req.get_selector()
@@ -176,12 +169,10 @@ def createGrabber():
     DEBUG = None
     try:
         rv = createBotoGrabber()
-        if DEBUG:
-            print "Created BotoGrabber"
+        self.verbose_logger.log(logginglevels.DEBUG_4, "Created BotoGrabber")
         return rv
     except:
-        if DEBUG:
-            print "Creating UrllibGrabber"
+        self.verbose_logger.log(logginglevels.DEBUG_4, "Creating UrllibGrabber")
         return createUrllibGrabber()
 
 AmazonS3Grabber = createGrabber()
