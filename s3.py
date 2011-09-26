@@ -166,15 +166,14 @@ def createUrllibGrabber():
 
 
 def createGrabber():
+    logger = logging.getLogger("yum.verbose.main")
     try:
         rv = createBotoGrabber()
-        self.verbose_logger.log(logginglevels.DEBUG_4, "Created BotoGrabber")
+        logger.debug("Created BotoGrabber")
         return rv
     except:
-        self.verbose_logger.log(logginglevels.DEBUG_4, "Creating UrllibGrabber")
+        logger.debug("Creating UrllibGrabber")
         return createUrllibGrabber()
-
-AmazonS3Grabber = createGrabber()
 
 import logging
 import os
@@ -188,11 +187,12 @@ from yum import logginglevels
 
 import yum.Errors
 
+AmazonS3Grabber = createGrabber()
+
 __revision__ = "1.0.0"
 
 requires_api_version = '2.5'
 plugin_type = TYPE_CORE
-CONDUIT=None
 
 def config_hook(conduit):
     logger = logging.getLogger("yum.verbose.main")
