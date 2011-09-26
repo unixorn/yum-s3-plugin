@@ -35,7 +35,6 @@ def createBotoGrabber():
     from urlgrabber.grabber import URLGrabber
 
     class BotoGrabber(URLGrabber):
-        DEBUG = None
         def __init__(self, awsAccessKey, awsSecretKey, baseurl):
             self.verbose_logger.log(logginglevels.DEBUG_4, "creating empty URLGrabber instance")
             URLGrabber.__init__(self)
@@ -107,7 +106,6 @@ def createUrllibGrabber():
     import time, sha, hmac, base64
 
     class UrllibGrabber:
-        DEBUG = None
         @classmethod
 
         def s3sign(cls,request, secret_key, key_id, date=None):
@@ -167,7 +165,6 @@ def createUrllibGrabber():
 
 
 def createGrabber():
-    DEBUG = None
     try:
         rv = createBotoGrabber()
         self.verbose_logger.log(logginglevels.DEBUG_4, "Created BotoGrabber")
