@@ -43,6 +43,73 @@ def interactive_notify(msg):
     if sys.stdout.isatty():
         print msg
 
+def createUrllibGrabber():
+    """
+    Fetch files from AWS without boto. This code has not been tested on RHEL 6 as EPEL ships with boto 2.x.
+    """
+    import os
+    import sys
+    import urllib2
+    import time, sha, hmac, base64
+
+    class UrllibGrabber:
+        @classmethod
+
+        def s3sign(cls,request, secret_key, key_id, date=None):
+                date=time.strftime("%a, %d %b %Y %H:%M:%S +0000", date or time.gmtime() )
+                host = request.get_host()
+                bucket = host.split('.')[0]
+                request.add_header( 'Date', date)
+                resource = "/%s%s" % ( bucket, request.get_selector() )
+                sigstring = """%(method)s\n\n\n%(date)s\n%(canon_amzn_resource)s""" % {
+                                           'method':request.get_method(),
+                                           #'content_md5':'',
+                                           #'content_type':'', # only for PUT
+                                           'date':request.headers.get('Date'),
+                                           #'canon_amzn_headers':'',
+                                           'canon_amzn_resource':resource }
+                digest = hmac.new(secret_key, sigstring, sha ).digest()
+                digest = base64.b64encode(digest)
+                request.add_header('Authorization', "AWS %s:%s" % ( key_id,  digest ))
+
+        def __init__(self, awsAccessKey, awsSecretKey, baseurl ):
+            try: baseurl = baseurl[0]
+            except: pass
+            self.baseurl = baseurl
+            self.awsAccessKey = awsAccessKey
+            self.awsSecretKey = awsSecretKey
+
+        def _request(self,url):
+            req = urllib2.Request("%s%s" % (self.baseurl, url))
+            UrllibGrabber.s3sign(req, self.awsSecretKey, self.awsAccessKey )
+            return req
+
+        def urlgrab(self, url, filename=None, **kwargs):
+            """urlgrab(url) copy the file to the local filesystem"""
+            self.verbose_logger.log(logginglevels.DEBUG_4, "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename ))
+            req = self._request(url)
+            if not filename:
+                filename = req.get_selector()
+                if filename[0] == '/': filename = filename[1:]
+            out = open(filename, 'w+')
+            resp = urllib2.urlopen(req)
+            buff = resp.read(8192)
+            while buff:
+                out.write(buff)
+                buff = resp.read(8192)
+            return filename
+            # zzz - does this return a value or something?
+
+        def urlopen(self, url, **kwargs):
+            """urlopen(url) open the remote file and return a file object"""
+            return urllib2.urlopen( self._request(url) )
+
+        def urlread(self, url, limit=None, **kwargs):
+            """urlread(url) return the contents of the file as a string"""
+            return urllib2.urlopen( self._request(url) ).read()
+
+    return UrllibGrabber
+
 def createBotoGrabber():
     import boto
     from urlparse import urlparse
@@ -112,79 +179,16 @@ def createBotoGrabber():
 
     return BotoGrabber
 
-def createUrllibGrabber():
-    import os
-    import sys
-    import urllib2
-    import time, sha, hmac, base64
-
-    class UrllibGrabber:
-        @classmethod
-
-        def s3sign(cls,request, secret_key, key_id, date=None):
-                date=time.strftime("%a, %d %b %Y %H:%M:%S +0000", date or time.gmtime() )
-                host = request.get_host()
-                bucket = host.split('.')[0]
-                request.add_header( 'Date', date)
-                resource = "/%s%s" % ( bucket, request.get_selector() )
-                sigstring = """%(method)s\n\n\n%(date)s\n%(canon_amzn_resource)s""" % {
-                                           'method':request.get_method(),
-                                           #'content_md5':'',
-                                           #'content_type':'', # only for PUT
-                                           'date':request.headers.get('Date'),
-                                           #'canon_amzn_headers':'',
-                                           'canon_amzn_resource':resource }
-                digest = hmac.new(secret_key, sigstring, sha ).digest()
-                digest = base64.b64encode(digest)
-                request.add_header('Authorization', "AWS %s:%s" % ( key_id,  digest ))
-
-        def __init__(self, awsAccessKey, awsSecretKey, baseurl ):
-            try: baseurl = baseurl[0]
-            except: pass
-            self.baseurl = baseurl
-            self.awsAccessKey = awsAccessKey
-            self.awsSecretKey = awsSecretKey
-
-        def _request(self,url):
-            req = urllib2.Request("%s%s" % (self.baseurl, url))
-            UrllibGrabber.s3sign(req, self.awsSecretKey, self.awsAccessKey )
-            return req
-
-        def urlgrab(self, url, filename=None, **kwargs):
-            """urlgrab(url) copy the file to the local filesystem"""
-            self.verbose_logger.log(logginglevels.DEBUG_4, "UrlLibGrabber urlgrab url=%s filename=%s" % ( url, filename ))
-            req = self._request(url)
-            if not filename:
-                filename = req.get_selector()
-                if filename[0] == '/': filename = filename[1:]
-            out = open(filename, 'w+')
-            resp = urllib2.urlopen(req)
-            buff = resp.read(8192)
-            while buff:
-                out.write(buff)
-                buff = resp.read(8192)
-            return filename
-            # zzz - does this return a value or something?
-
-        def urlopen(self, url, **kwargs):
-            """urlopen(url) open the remote file and return a file object"""
-            return urllib2.urlopen( self._request(url) )
-
-        def urlread(self, url, limit=None, **kwargs):
-            """urlread(url) return the contents of the file as a string"""
-            return urllib2.urlopen( self._request(url) ).read()
-
-    return UrllibGrabber
-
 def createGrabber():
     logger = logging.getLogger("yum.verbose.main")
     try:
-        rv = createBotoGrabber()
+        grabber = createBotoGrabber()
         logger.debug("Created BotoGrabber")
-        return rv
     except:
-        logger.debug("Creating UrllibGrabber")
-        return createUrllibGrabber()
+        grabber = createUrllibGrabber()
+        logger.debug("Created UrllibGrabber")
+    finally:
+        return grabber
 
 AmazonS3Grabber = createGrabber()
 
