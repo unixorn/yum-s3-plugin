@@ -27,6 +27,18 @@ examples on how to deploy those.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import logging
+import os
+import sys
+import urllib
+
+from yum.plugins import TYPE_CORE
+from yum.yumRepo import YumRepository
+from yum import config
+from yum import logginglevels
+
+import yum.Errors
+
 def interactive_notify(msg):
     if sys.stdout.isatty():
         print msg
@@ -164,7 +176,6 @@ def createUrllibGrabber():
 
     return UrllibGrabber
 
-
 def createGrabber():
     logger = logging.getLogger("yum.verbose.main")
     try:
@@ -175,22 +186,33 @@ def createGrabber():
         logger.debug("Creating UrllibGrabber")
         return createUrllibGrabber()
 
-import logging
-import os
-import sys
-import urllib
-
-from yum.plugins import TYPE_CORE
-from yum.yumRepo import YumRepository
-from yum import config
-from yum import logginglevels
-
-import yum.Errors
-
 AmazonS3Grabber = createGrabber()
 
-__revision__ = "1.0.0"
+class AmazonS3Repo(YumRepository):
+    """
+    Repository object for Amazon S3.
+    """
 
+    def __init__(self, repoid):
+        YumRepository.__init__(self, repoid)
+        self.enable()
+        self.grabber = None
+
+    def setupGrab(self):
+        YumRepository.setupGrab(self)
+        self.grabber = AmazonS3Grabber(self.key_id, self.secret_key )
+
+    def _getgrabfunc(self): raise Exception("get grabfunc!")
+    def _getgrab(self):
+        if not self.grabber:
+            self.grabber = AmazonS3Grabber(self.key_id, self.secret_key, baseurl=self.baseurl )
+        return self.grabber
+
+    grabfunc = property(lambda self: self._getgrabfunc())
+    grab = property(lambda self: self._getgrab())
+
+
+__revision__ = "1.0.0"
 requires_api_version = '2.5'
 plugin_type = TYPE_CORE
 
@@ -217,30 +239,6 @@ def init_hook(conduit):
             new_repo.enablegroups = repo.enablegroups
             new_repo.key_id = repo.key_id
             new_repo.secret_key = repo.secret_key
+
             repos.delete(repo.id)
             repos.add(new_repo)
-
-
-class AmazonS3Repo(YumRepository):
-    """
-    Repository object for Amazon S3.
-    """
-
-    def __init__(self, repoid):
-        YumRepository.__init__(self, repoid)
-        self.enable()
-        self.grabber = None
-
-    def setupGrab(self):
-        YumRepository.setupGrab(self)
-        self.grabber = AmazonS3Grabber(self.key_id, self.secret_key )
-
-    def _getgrabfunc(self): raise Exception("get grabfunc!")
-    def _getgrab(self):
-        if not self.grabber:
-            self.grabber = AmazonS3Grabber(self.key_id, self.secret_key, baseurl=self.baseurl )
-        return self.grabber
-
-    grabfunc = property(lambda self: self._getgrabfunc())
-    grab = property(lambda self: self._getgrab())
-
