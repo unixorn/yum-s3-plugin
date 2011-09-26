@@ -46,18 +46,19 @@ used to make this possible.
     repo/
          pool/
               i386/
-	           myprogram-1.0.rpm
-		   myprogram-1.1.rpm
-    		   myprogram-1.2.rpm
+                   myprogram-1.0.rpm
+                   myprogram-1.1.rpm
+                   myprogram-1.2.rpm
          env/
              CI/
                 myprogram-1.2.rpm -> ../../pool/i386/myprogram-1.2.rpm
              testing/
-	        myprogram-1.1.rpm -> ../../pool/i386/myprogram-1.1.rpm
+                myprogram-1.1.rpm -> ../../pool/i386/myprogram-1.1.rpm
              production/
-	        myprogram-1.0.rpm -> ../../pool/i386/myprogram-1.0.rpm
+                myprogram-1.0.rpm -> ../../pool/i386/myprogram-1.0.rpm
 		   
 So when you add a RPM to a repository, you do the following steps
+
 - add the RPM to the /pool directory
 - create a symlink in the folder (like CI, testing, production)
 - run createrepo with the --baseurl option
