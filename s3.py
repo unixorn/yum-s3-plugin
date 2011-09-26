@@ -196,10 +196,10 @@ def createGrabber():
     logger = logging.getLogger("yum.verbose.main")
     try:
         grabber = createBotoGrabber()
-        logger.debug("Created BotoGrabber")
+        logger.debug("Using BotoGrabber")
     except:
         grabber = createUrllibGrabber()
-        logger.debug("Created UrllibGrabber")
+        logger.debug("Using UrllibGrabber")
     finally:
         return grabber
 
