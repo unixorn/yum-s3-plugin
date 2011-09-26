@@ -59,7 +59,7 @@ def createUrllibGrabber():
                 date=time.strftime("%a, %d %b %Y %H:%M:%S +0000", date or time.gmtime() )
                 host = request.get_host()
                 bucket = host.split('.')[0]
-                request.add_header( 'Date', date)
+                request.add_header('Date', date)
                 resource = "/%s%s" % ( bucket, request.get_selector() )
                 sigstring = """%(method)s\n\n\n%(date)s\n%(canon_amzn_resource)s""" % {
                                            'method':request.get_method(),
@@ -121,63 +121,73 @@ def createBotoGrabber():
         logger = logging.getLogger("yum.verbose.main")
 
         def __init__(self, awsAccessKey, awsSecretKey, baseurl):
+            self.logger.debug("BotoGrabber init BASE_URL=%s" % baseurl)
 
-            self.logger.log(logginglevels.DEBUG_4, "creating empty URLGrabber instance")
             URLGrabber.__init__(self)
-            self.logger.log(logginglevels.DEBUG_4, "BotoGrabber init BASE_URL=%s" % baseurl)
-            if not baseurl:
-                raise Exception("BotoGrabberInit got blank baseurl")
-            try: baseurl = baseurl[0]
-            except: pass
-            self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
-            self.baseurl = urlparse(baseurl)
-            if hasattr(self.baseurl, 'netloc'):
-                self.bucket_name = self.baseurl.netloc
-                self.key_prefix = self.baseurl.path[1:]
-            else:
-                self.bucket_name = self.baseurl[1]
-                self.key_prefix = self.baseurl[2]
-            m = re.match('(.*)\.s3.*\.amazonaws\.com', self.bucket_name)
-            if (m):
-                self.bucket_name = m.group(1)
+            self._handle_baseurl(baseurl)
+            self._handle_s3(awsAccessKey, awsSecretKey)
+            self._dump_attributes()
             interactive_notify("%s - %s" % (self.bucket_name, self.key_prefix))
 
+        def _handle_baseurl(self, baseurl):
+            if type(baseurl) == list:
+                baseurl = baseurl[0]
+
+            self.baseurl = urlparse(baseurl)
+            self.bucket_name = re.match('(.*)\.s3.*\.amazonaws\.com', self.baseurl.netloc).group(1)
+            self.key_prefix = self.baseurl.path[1:]
+
+        def _handle_s3(self, awsAccessKey, awsSecretKey):
+            self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
+
+        def _dump_attributes(self):
+            self.logger.debug("baseurl: %s" % str(self.baseurl))
+            self.logger.debug("bucket: %s" % self.bucket_name)
+            self.logger.debug("key_prefix: %s" % self.key_prefix)
+
         def _key_name(self,url):
-            self.logger.log(logginglevels.DEBUG_4, "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix ))
+            self.logger.debug("_key_name url=%s, key_prefix=%s" % (url, self.key_prefix))
+
             if not url.startswith("http://"):
-                return "%s%s" % ( self.key_prefix, url )
-            interactive_notify("Notice: extracting path from url (%s) instead of using prefix (%s)" % (url,self.key_prefix))
-            result = urlparse(url)[2]
-            interactive_notify("Notice: extracted path is: %s" % result)
-            return result
+                key = "%s/%s" %  (self.key_prefix, url)
+            else:
+                key = urlparse(url)[2]
+
+            self.logger.debug("_key_name(%s) -> %s" % (url, key))
+            return key
 
         def _key(self, key_name):
+            self.logger.debug("_key(%s)" % key_name)
             bucket = self.s3.get_bucket(self.bucket_name)
-            self.logger.log(logginglevels.DEBUG_4,
-                            "BotoGrabber _key for bucket_name=%s, key_name=%s" % ( self.bucket_name, key_name ))
+
             return bucket.get_key(key_name)
 
         def urlgrab(self, url, filename=None, **kwargs):
             """urlgrab(url) copy the file to the local filesystem"""
-            self.logger.log(logginglevels.DEBUG_4, "BotoGrabber urlgrab url=%s filename=%s" % ( url, filename ))
+
+            self.logger.debug("urlgrab(url='%s',filename='%s')" % (url, filename))
+
             key_name = self._key_name(url)
-            self.logger.log(logginglevels.DEBUG_4,
-                            "BotoGrabber urlgrab url=%s key_name=%s filename=%s" % ( url, key_name, filename ))
             key = self._key(key_name)
-            if not key: raise Exception("Can not get key for key=%s" % key_name )
-            if not filename: filename = key.key
+
+            if not key:
+                raise Exception("Can not get key for key=%s" % key_name )
+            if not filename:
+                filename = key.key
+
             key.get_contents_to_filename(filename)
             return filename
-            # zzz - does this return a value or something?
 
         def urlopen(self, url, **kwargs):
             """urlopen(url) open the remote file and return a file object"""
-            self.logger.log(logginglevels.DEBUG_4, "BotoGrabber urlopen url=%s" % url)
+
+            self.logger.debug("urlopen(%s)" % url)
             return self._key(url)
 
         def urlread(self, url, limit=None, **kwargs):
             """urlread(url) return the contents of the file as a string"""
-            self.logger.log(logginglevels.DEBUG_4, "BotoGrabber urlread url=%s" % url)
+
+            self.logger.debug("urlread(%s)" % url)
             return self._key(url).read()
 
     return BotoGrabber
