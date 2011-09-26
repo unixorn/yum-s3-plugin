@@ -6,6 +6,8 @@ It is very convenient to run a yum-repository on S3. Using createrepo
 and the awesome s3cmd (https://github.com/s3tools/s3cmd), is basically
 all you need. However, this only works for public repositories ...
 
+# Public vs. protected repositories
+
 ## Public repositories
 
 - enable "website feature" of your s3 bucket
@@ -15,6 +17,11 @@ all you need. However, this only works for public repositories ...
 
 This is where yum-s3 kicks in. yum-s3 uses the Boto library to fetch
 objects from S3, which allows using credentials.
+
+# Install
+
+- run ./package to build a RPM
+- install
 
 # How to configure a S3 based repo
 
