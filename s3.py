@@ -27,6 +27,10 @@ examples on how to deploy those.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+def interactive_notify(msg):
+    if sys.stdout.isatty():
+        print msg
+
 def createBotoGrabber():
     import boto
     from urlparse import urlparse
@@ -53,18 +57,15 @@ def createBotoGrabber():
             m = re.match('(.*)\.s3.*\.amazonaws\.com', self.bucket_name)
             if (m):
                 self.bucket_name = m.group(1)
-            if sys.stdout.isatty():
-                print "%s - %s" % (self.bucket_name, self.key_prefix)
+            interactive_notify("%s - %s" % (self.bucket_name, self.key_prefix))
 
         def _key_name(self,url):
             self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber _key_name url=%s, key_prefix=%s" % ( url, self.key_prefix ))
             if not url.startswith("http://"):
                 return "%s%s" % ( self.key_prefix, url )
-            if sys.stdout.isatty():
-                print "Notice: extracting path from url (%s) instead of using prefix (%s)" % (url,self.key_prefix)
+            interactive_notify("Notice: extracting path from url (%s) instead of using prefix (%s)" % (url,self.key_prefix))
             result = urlparse(url)[2]
-            if sys.stdout.isatty():
-                print "Notice: extracted path is: %s" % result
+            interactive_notify("Notice: extracted path is: %s" % result)
             return result
 
         def _key(self, key_name):
