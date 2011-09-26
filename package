@@ -10,6 +10,7 @@ if [ "$1" != "-d" ]; then
    exit 1
 fi
 
+set -e
 buildroot=$(dirname $(readlink -f "$0"))
 mkdir -p ${buildroot}/{RPMS,BUILD,BUILDROOT}
 rpmbuild --verbose \
