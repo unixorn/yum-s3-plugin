@@ -43,7 +43,8 @@ def createBotoGrabber():
             self.verbose_logger.log(logginglevels.DEBUG_4, "creating empty URLGrabber instance")
             URLGrabber.__init__(self)
             self.verbose_logger.log(logginglevels.DEBUG_4, "BotoGrabber init BASE_URL=%s" % baseurl)
-            if not baseurl: raise Exception("BotoGrabberInit got blank baseurl")
+            if not baseurl:
+                raise Exception("BotoGrabberInit got blank baseurl")
             try: baseurl = baseurl[0]
             except: pass
             self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
@@ -100,7 +101,6 @@ def createBotoGrabber():
     return BotoGrabber
 
 def createUrllibGrabber():
-
     import os
     import sys
     import urllib2
