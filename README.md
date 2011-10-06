@@ -26,7 +26,7 @@ objects from S3, which allows using credentials.
 # How to configure a S3 based repo
 
     [n4repoprivate-pool-noarch]
-    name=n4repoprivate-pool-noarch
+    name=repoprivate-pool-noarch
     baseurl=http://<YOURBUCKET>.s3-website-eu-west-1.amazonaws.com/<YOURPATH>
     enabled=1
     gpgcheck=0
