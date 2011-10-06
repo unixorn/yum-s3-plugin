@@ -63,7 +63,7 @@ used to make this possible.
                 myprogram-1.1.rpm -> ../../pool/i386/myprogram-1.1.rpm
              production/
                 myprogram-1.0.rpm -> ../../pool/i386/myprogram-1.0.rpm
-		   
+
 So when you add a RPM to a repository, you do the following steps
 
 - add the RPM to the /pool directory
@@ -79,7 +79,8 @@ directory to fetch the actual RPM.
 
 ## How do I make yum honour the baseurl?
 
-There is a patch to yum coming soon.
+There is a patch to yum (version 3.2.29 that ships with SL6). See
+https://github.com/jbraeuer/yum-s3
 
 Have fun,
 Jens
