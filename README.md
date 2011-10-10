@@ -25,7 +25,7 @@ objects from S3, which allows using credentials.
 
 # How to configure a S3 based repo
 
-    [n4repoprivate-pool-noarch]
+    [repoprivate-pool-noarch]
     name=repoprivate-pool-noarch
     baseurl=http://<YOURBUCKET>.s3-website-eu-west-1.amazonaws.com/<YOURPATH>
     enabled=1
@@ -82,5 +82,4 @@ directory to fetch the actual RPM.
 There is a patch to yum (version 3.2.29 that ships with SL6). See
 https://github.com/jbraeuer/yum-s3
 
-Have fun,
-Jens
+Have fun!
