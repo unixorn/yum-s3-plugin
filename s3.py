@@ -257,6 +257,7 @@ def init_hook(conduit):
             new_repo.base_persistdir = repo.base_persistdir
             new_repo.basecachedir = repo.basecachedir
             new_repo.gpgcheck = repo.gpgcheck
+            new_repo.gpgkey = repo.gpgkey
             new_repo.proxy = repo.proxy
             new_repo.enablegroups = repo.enablegroups
             new_repo.key_id = repo.key_id
