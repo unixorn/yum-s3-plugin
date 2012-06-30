@@ -133,9 +133,11 @@ def createBotoGrabber():
             if type(baseurl) == list:
                 baseurl = baseurl[0]
 
+            # self.baseurl[1] is self.baseurl.netloc; self.baseurl[2] is self.baseurl.path
+            # See http://docs.python.org/library/urlparse.html
             self.baseurl = urlparse(baseurl)
-            self.bucket_name = re.match('(.*)\.s3.*\.amazonaws\.com', self.baseurl.netloc).group(1)
-            self.key_prefix = self.baseurl.path[1:]
+            self.bucket_name = re.match('(.*)\.s3.*\.amazonaws\.com', self.baseurl[1]).group(1)
+            self.key_prefix = self.baseurl[2][1:]
 
         def _handle_s3(self, awsAccessKey, awsSecretKey):
             self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
@@ -195,11 +197,12 @@ def createBotoGrabber():
 def createGrabber():
     logger = logging.getLogger("yum.verbose.main")
     try:
-        grabber = createBotoGrabber()
-        logger.debug("Using BotoGrabber")
-    except:
-        grabber = createUrllibGrabber()
-        logger.debug("Using UrllibGrabber")
+        try:
+            grabber = createBotoGrabber()
+            logger.debug("Using BotoGrabber")
+        except:
+            grabber = createUrllibGrabber()
+            logger.debug("Using UrllibGrabber")
     finally:
         return grabber
 
@@ -254,7 +257,6 @@ def init_hook(conduit):
             new_repo.name = repo.name
             new_repo.baseurl = repo.baseurl
             new_repo.mirrorlist = repo.mirrorlist
-            new_repo.base_persistdir = repo.base_persistdir
             new_repo.basecachedir = repo.basecachedir
             new_repo.gpgcheck = repo.gpgcheck
             new_repo.gpgkey = repo.gpgkey
@@ -263,7 +265,9 @@ def init_hook(conduit):
             new_repo.key_id = repo.key_id
             new_repo.secret_key = repo.secret_key
             if hasattr(repo, 'priority'):
-              new_repo.priority = repo.priority
+                new_repo.priority = repo.priority
+            if hasattr(repo, 'base_persistdir'):
+                new_repo.base_persistdir = repo.base_persistdir
 
             repos.delete(repo.id)
             repos.add(new_repo)
