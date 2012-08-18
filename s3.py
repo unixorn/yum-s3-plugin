@@ -239,6 +239,7 @@ plugin_type = TYPE_CORE
 def config_hook(conduit):
     logger = logging.getLogger("yum.verbose.main")
     config.RepoConf.s3_enabled = config.BoolOption(False)
+    config.RepoConf.enabled = config.BoolOption(False)
     config.RepoConf.key_id = config.Option() or conduit.confString('main', 'aws_access_key_id')
     config.RepoConf.secret_key = config.Option() or conduit.confString('main', 'aws_secret_access_key')
 
@@ -252,7 +253,7 @@ def init_hook(conduit):
     cachedir = conduit.getConf().cachedir
 
     for key,repo in repos.repos.iteritems():
-        if isinstance(repo, YumRepository) and repo.s3_enabled:
+        if isinstance(repo, YumRepository) and repo.s3_enabled and repo.enabled:
             new_repo = AmazonS3Repo(key)
             new_repo.name = repo.name
             new_repo.baseurl = repo.baseurl
