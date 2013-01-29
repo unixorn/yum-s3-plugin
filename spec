@@ -8,7 +8,6 @@ License:	Apache License 2.0
 URL:		git@github.com:NumberFour/yum-s3-plugin.git
 Source0:	s3.py
 Source1:	s3.conf
-Source2:	s3test.repo
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -17,14 +16,11 @@ Requires:	python-boto
 %description
 
 %prep
-cp -p %SOURCE0 %SOURCE1 %SOURCE2 .
+cp -p %SOURCE0 %SOURCE1 .
 find .
 
 %install
 rm -rf "${RPM_BUILD_ROOT}"
-
-mkdir -p ${RPM_BUILD_ROOT}/etc/yum.repos.d/
-cp s3test.repo ${RPM_BUILD_ROOT}/etc/yum.repos.d/
 
 mkdir -p ${RPM_BUILD_ROOT}/etc/yum/pluginconf.d/
 cp s3.conf ${RPM_BUILD_ROOT}/etc/yum/pluginconf.d/
@@ -37,7 +33,6 @@ rm -rf "${RPM_BUILD_ROOT}"
 
 %files
 %defattr(-,root,root,-)
-/etc/yum.repos.d/s3test.repo
 /etc/yum/pluginconf.d/s3.conf
 /usr/lib/yum-plugins
 
