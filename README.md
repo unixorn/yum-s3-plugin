@@ -85,4 +85,15 @@ directory to fetch the actual RPM.
 There is a patch to yum (version 3.2.29 that ships with SL6). See
 https://github.com/jbraeuer/yum-s3
 
+## Authors
+
+- @rmela
+
+- @CBarraford
+- @airpringle
+- @jbraeuer
+- @jcomeaux
+- @louisrli
+- @tanob
+
 Have fun!
