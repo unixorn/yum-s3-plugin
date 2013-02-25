@@ -2,10 +2,10 @@ A S3 plugin for yum.
 
 # Motivation
 
-It is very convenient to run a yum-repository on S3. S3 frees you from running your own webserver. 
+It is very convenient to run a yum-repository on S3. S3 frees you from running your own webserver.
 You also dont have to worry about scalability when tons of servers update.
 
-`createrepo` and the awesome [`s3cmd`](https://github.com/s3tools/s3cmd), is 
+`createrepo` and the awesome [`s3cmd`](https://github.com/s3tools/s3cmd), is
 all you need. However, this only works for public repositories ...
 
 # Public vs. protected repositories
