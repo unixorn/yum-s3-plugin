@@ -160,7 +160,7 @@ def createBotoGrabber():
 
         def _key(self, key_name):
             self.logger.debug("_key(%s)" % key_name)
-            bucket = self.s3.get_bucket(self.bucket_name)
+            bucket = self.s3.get_bucket(self.bucket_name, validate=False)
 
             return bucket.get_key(key_name)
 
