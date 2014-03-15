@@ -31,7 +31,7 @@ objects from S3, which allows using credentials.
 
     [repoprivate-pool-noarch]
     name=repoprivate-pool-noarch
-    baseurl=http://<YOURBUCKET>.s3-website-eu-west-1.amazonaws.com/<YOURPATH>
+    baseurl=http://<YOURBUCKET>.s3.amazonaws.com/<YOURPATH>
     gpgcheck=0
     priority=1
     s3_enabled=1
