@@ -136,14 +136,18 @@ def createBotoGrabber():
             # self.baseurl[1] is self.baseurl.netloc; self.baseurl[2] is self.baseurl.path
             # See http://docs.python.org/library/urlparse.html
             self.baseurl = urlparse(baseurl)
-            self.bucket_name = re.match('(.*)\.s3.*\.amazonaws\.com', self.baseurl[1]).group(1)
-            self.key_prefix = self.baseurl[2][1:]
+
+            m = re.match('(.*)\.(s3.*\.amazonaws\.com)', self.baseurl[1])
+            self.bucket_name = m.group(1)
+            self.host_name = m.group(2)
+            self.key_prefix = self.baseurl[2][1:].rstrip('/')
 
         def _handle_s3(self, awsAccessKey, awsSecretKey):
-            self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey)
+            self.s3 = boto.connect_s3(awsAccessKey, awsSecretKey, host=self.host_name)
 
         def _dump_attributes(self):
             self.logger.debug("baseurl: %s" % str(self.baseurl))
+            self.logger.debug("host_name: %s" % self.host_name)
             self.logger.debug("bucket: %s" % self.bucket_name)
             self.logger.debug("key_prefix: %s" % self.key_prefix)
 
